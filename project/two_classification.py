@@ -67,30 +67,28 @@ class Naive_Bayes:
         for word in self.words_vector:
             self.pos_words_vector[word] = 0
             self.neg_word_vector[word] = 0
-        self.pos_prob = 0
+        self.pos_num = 0
         for label in self.trian_labels:
             if label == 1:
-                self.pos_prob += 1
-        self.neg_prob = (len(self.trian_labels) - self.pos_prob) / len(self.trian_labels)
-        self.pos_prob = self.pos_prob / len(self.trian_labels)
+                self.pos_num += 1
+        self.neg_num = len(self.train_set) - self.pos_num
+        self.neg_prob = (self.neg_num + 1) / (len(self.trian_labels) + 2)
+        self.pos_prob = (self.pos_num + 1) / (len(self.trian_labels) + 2)
 
     def classification(self, test_set):
-        pos_words_num = 0
-        neg_words_num = 0
-        words_num = len(self.words_vector)
         for i in range(len(self.train_set)):
             print('计算第', i, '行')
-            if self.trian_labels[i] == 1:
-                pos_words_num += len(self.train_set[i])
-                for word in self.train_set[i]:
-                    self.pos_words_vector[word] += 1
-            else:
-                neg_words_num += len(self.train_set[i])
-                for word in self.train_set[i]:
-                    self.neg_word_vector[word] += 1
+            tmp = []
+            for word in self.train_set[i]:
+                if word not in tmp:
+                    if self.trian_labels[i] == 1:
+                        self.pos_words_vector[word] += 1
+                    else:
+                        self.neg_word_vector[word] += 1
+                    tmp.append(tmp)
         for key in self.words_vector:
-            self.pos_words_vector[key] = (self.pos_words_vector[key]) / (pos_words_num + words_num)
-            self.neg_word_vector[key] = (self.neg_word_vector[key]) / (neg_words_num + words_num)
+            self.pos_words_vector[key] = (self.pos_words_vector[key] + 1) / (self.pos_num + 2)
+            self.neg_word_vector[key] = (self.neg_word_vector[key] + 1) / (self.neg_num + 2)
         labels = []
         for line in test_set:
             is_pos = math.log(self.pos_prob)
@@ -175,10 +173,10 @@ if __name__ == '__main__':
     train_set = read_data('out.txt')
     train_labels = read_label('trainLabel.txt')
     test_set = read_data('in.txt')
-    NB = Naive_Bayes(train_set[:18000], train_labels[:18000])
-    NB.validation(train_set[18000:], train_labels[18000:])
-    # labels = NB.classification(test_set)
-    # write_result('16337327_1.txt', labels)
+    NB = Naive_Bayes(train_set[:], train_labels[:])
+    #NB.validation(train_set[18000:], train_labels[18000:])
+    labels = NB.classification(test_set)
+    write_result('16337327_1.txt', labels)
 
     end_time = time.time()
     print('运行总用时:', end_time - start_time)
